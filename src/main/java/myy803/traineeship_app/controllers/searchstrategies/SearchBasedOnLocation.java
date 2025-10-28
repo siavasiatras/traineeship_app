@@ -15,28 +15,19 @@ import myy803.traineeship_app.mappers.CompanyMapper;
 import myy803.traineeship_app.mappers.StudentMapper;
 
 @Component
-public class SearchBasedOnLocation implements PositionsSearchStrategy {
+public class SearchBasedOnLocation extends AbstractSupervisorAssignmentStrategy {
+	@Autowired
+	private TraineeshipPositionsMapper positionsMapper;
 
-	@Autowired
-	private CompanyMapper companyMapper;
-	
-	@Autowired
-	private StudentMapper studentMapper;
 	
 	@Override
-	public List<TraineeshipPosition> search(String applicantUsername) {
-		
-		Student applicant = studentMapper.findByUsername(applicantUsername);
-		Set<TraineeshipPosition> matchingPositionsSet = new HashSet<TraineeshipPosition>();
+	protected void findMatchingPositions(Student applicant, Set<TraineeshipPosition> matchingPositions) {
+		List<Company> companies = CompanyMapper.findByCompanyLocation(applicant.getPreferredLocation());
 
-		List<Company> companies = companyMapper.findByCompanyLocation(
-				applicant.getPreferredLocation()
-				);
+		for(Company company : companies) {			
+			matchingPositions.addAll(company.getAvailablePositions());
+		}
 		
-		for(Company company : companies)
-			matchingPositionsSet.addAll(company.getAvailablePositions());
-		
-		return new ArrayList<TraineeshipPosition>(matchingPositionsSet);
 	}
 
 }

@@ -14,28 +14,18 @@ import myy803.traineeship_app.mappers.StudentMapper;
 import myy803.traineeship_app.mappers.TraineeshipPositionsMapper;
 
 @Component
-public class SearchBasedOnInterests implements PositionsSearchStrategy {
+public class SearchBasedOnInterests extends AbstractSupervisorAssignmentStrategy {
 	@Autowired
 	private TraineeshipPositionsMapper positionsMapper;
-	
-	@Autowired
-	private StudentMapper studentMapper;
+
 	
 	@Override
-	public List<TraineeshipPosition> search(String applicantUsername) {
-		
-		Student applicant = studentMapper.findByUsername(applicantUsername);
-		Set<TraineeshipPosition> matchingPositionsSet = new HashSet<TraineeshipPosition>();
-		
+	protected void findMatchingPositions(Student applicant, Set<TraineeshipPosition> matchingPositions) {
 		String[] interests = applicant.getInterests().split("[,\\s+\\.]");
 		for(int i = 0; i < interests.length; i++) {
-			List<TraineeshipPosition> positions = positionsMapper.findByTopicsContainingAndIsAssignedFalse(
-					interests[i]
-							);
-			matchingPositionsSet.addAll(positions);
+			List<TraineeshipPosition> positions = positionsMapper.findByTopicsContainingAndIsAssignedFalse(interests[i]);
+			matchingPositions.addAll(positions);
 		}
-		
-		return new ArrayList<TraineeshipPosition>(matchingPositionsSet);
 	}
 
 }
